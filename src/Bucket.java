@@ -10,25 +10,28 @@ public class Bucket {
         }
     }
 
-    private boolean isFull() {
+    public boolean isNotFull() {
         for (Tuple tuple : tuples) {
             if (tuple.getValue() == null) {
-                return false;
+                return true;
             }
         }
-        return true;
+        return false;
     }
 
-    public void insert(Integer key, String value) {
-        if (!isFull()) {
+    public void insert(Tuple newTuple) {
+        if (isNotFull()) {
             for (Tuple tuple : tuples) {
                 if (tuple.getValue() == null) {
-                    tuple.setValues(value, key);
-                    return;
+                    tuple.setValues(newTuple.getValue(), newTuple.getKey());
                 }
             }
         } else {
             System.out.println("Bucket is full");
         }
+    }
+
+    public ArrayList<Tuple> getTuples() {
+        return tuples;
     }
 }

@@ -1,15 +1,19 @@
-import java.util.Scanner;
+import java.io.BufferedReader;
+import java.io.FileReader;
 
-// Press Shift twice to open the Search Everywhere dialog and type `show whitespaces`,
-// then press Enter. You can now see whitespace characters in your code.
 public class Main {
-    public static void main(String[] args) {
-        Integer tableSize = 107;
-        Integer numberOfPages = 5;
+    public static void main(String[] args) throws Exception {
+        BufferedReader reader = new BufferedReader(new FileReader("./files/teste.txt"));
+
+        Integer tableSize = 40;
         Integer pageSize = 10;
-        Integer bucketSize = 3;
+        Integer bucketSize = 5;
 
-        Database database = new Database(tableSize, numberOfPages, pageSize, bucketSize);
+        Database database = new Database(tableSize, pageSize, bucketSize);
 
+        database.populateDatabase(reader);
+
+//        database.printTable();
+//        database.printBuckets();
     }
 }

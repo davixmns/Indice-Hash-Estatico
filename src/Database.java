@@ -1,30 +1,25 @@
 import java.io.BufferedReader;
-import java.io.FileReader;
-import java.util.ArrayList;
 
 public class Database {
-    private final ArrayList<Bucket> buckets = new ArrayList<>();
-    private Table table;
-    private final Integer tableSize;
+    private final Table table;
+    private final BucketOverflow bucketOverflow = new BucketOverflow();
 
-    public Database(Integer tableSize, Integer numberOfPages, Integer pageSize, Integer bucketSize) {
-        this.tableSize = tableSize;
-        this.table = new Table(numberOfPages, pageSize);
+    public Database(Integer tableSize, Integer pageSize, Integer bucketSize) {
+        this.table = new Table(tableSize, pageSize);
         int numberOfBuckets = (tableSize / bucketSize) + 1;
 
         for (int i = 0; i < numberOfBuckets; i++) {
-            this.buckets.add(new Bucket(bucketSize));
+            bucketOverflow.buckets.add(new Bucket(bucketSize));
         }
-
-        populateDatabase();
-        this.table.printTable();
     }
 
-    private void populateDatabase() {
+    public void populateDatabase(BufferedReader reader) {
         try {
-            BufferedReader reader = new BufferedReader(new FileReader("./files/entrada_teste.txt"));
             for (String line; (line = reader.readLine()) != null; ) {
-                this.table.insert(line);
+                Integer pageIndex = this.table.insert(line);
+                Integer hashedLine = hashFunction(line);
+                System.out.println(hashedLine);
+                bucketOverflow.insert(hashedLine, new Tuple(line, pageIndex));
             }
         } catch (Exception e) {
             System.out.println("Error reading file -> " + e.getMessage());
@@ -33,15 +28,23 @@ public class Database {
 
     private int hashFunction(String key) {
         int hash = 0;
+        int primo = 47;
         for (int i = 0; i < key.length(); i++) {
-            hash = (31 * hash + key.charAt(i)) % tableSize;
+            hash = (31 * hash + key.charAt(i)) % primo;
         }
         return hash;
     }
 
-    public void insert(String text) {
-        int index = hashFunction(text);
-        Bucket bucket = buckets.get(index);
-        bucket.insert(index, text);
+    public void printTable() {
+        this.table.printTable();
+    }
+
+    public void printBuckets() {
+        for (Bucket bucket : bucketOverflow.buckets) {
+            System.out.println("Bucket: " + bucketOverflow.buckets.indexOf(bucket) + " -------------------------");
+            for (Tuple tuple : bucket.getTuples()) {
+                System.out.println(tuple.toString());
+            }
+        }
     }
 }

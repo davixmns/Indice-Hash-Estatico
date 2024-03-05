@@ -2,20 +2,24 @@ import java.util.ArrayList;
 
 public class Table {
     private final ArrayList<Page> pages = new ArrayList<>();
+    private final Integer tableSize;
 
-    public Table (Integer numberOfPages, Integer pageSize){
+    public Table (Integer tableSize, Integer pageSize){
+        int numberOfPages = tableSize / pageSize;
+        this.tableSize = tableSize;
         for (int i = 0; i < numberOfPages; i++){
             pages.add(new Page(pageSize));
         }
     }
 
-    public void insert(String text){
+    public Integer insert(String text){
         for (Page page : pages){
             if(!page.isFull()){
                 page.insert(text);
-                return;
+                return pages.indexOf(page);
             }
         }
+        return null;
     }
 
     public void printTable(){
