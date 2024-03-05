@@ -1,3 +1,5 @@
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.util.ArrayList;
 
 public class Database {
@@ -8,11 +10,24 @@ public class Database {
     public Database(Integer tableSize, Integer numberOfPages, Integer pageSize, Integer bucketSize) {
         this.tableSize = tableSize;
         this.table = new Table(numberOfPages, pageSize);
-        int numberOfBuckets = tableSize / bucketSize;
+        int numberOfBuckets = (tableSize / bucketSize) + 1;
 
-        //create buckets
         for (int i = 0; i < numberOfBuckets; i++) {
-            buckets.add(new Bucket(pageSize));
+            this.buckets.add(new Bucket(bucketSize));
+        }
+
+        populateDatabase();
+        this.table.printTable();
+    }
+
+    private void populateDatabase() {
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader("./files/entrada_teste.txt"));
+            for (String line; (line = reader.readLine()) != null; ) {
+                this.table.insert(line);
+            }
+        } catch (Exception e) {
+            System.out.println("Error reading file -> " + e.getMessage());
         }
     }
 

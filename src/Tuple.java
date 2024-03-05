@@ -1,22 +1,27 @@
 public class Tuple {
-    private final String value;
-    private final Integer key;
+    private String value;
+    private Integer key;
 
     public Tuple(String value, Integer key) {
         this.value = value;
         this.key = key;
     }
 
-    public Integer getKey() {
-        return key;
+    public void setValues(String value, Integer key) {
+        this.value = value;
+        this.key = key;
     }
 
     public String getValue() {
         return value;
     }
 
+    public Integer getKey() {
+        return key;
+    }
+
     @Override
     public String toString() {
-        return key + " " + value;
+        return "key: " + key + " value: " + value;
     }
 }

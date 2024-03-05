@@ -8,4 +8,22 @@ public class Table {
             pages.add(new Page(pageSize));
         }
     }
+
+    public void insert(String text){
+        for (Page page : pages){
+            if(!page.isFull()){
+                page.insert(text);
+                return;
+            }
+        }
+    }
+
+    public void printTable(){
+        for (Page page : pages){
+            System.out.println("Page: " + pages.indexOf(page) + " -------------------------");
+            for (Tuple tuple : page.getTuples()){
+                System.out.println(tuple.toString());
+            }
+        }
+    }
 }

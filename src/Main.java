@@ -4,13 +4,12 @@ import java.util.Scanner;
 // then press Enter. You can now see whitespace characters in your code.
 public class Main {
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        System.out.println("Enter page size: ");
-        Integer pageSize = scanner.nextInt();
-        System.out.println("Enter number of pages on table: ");
-        Integer numberOfPages = scanner.nextInt();
+        Integer tableSize = 107;
+        Integer numberOfPages = 5;
+        Integer pageSize = 10;
+        Integer bucketSize = 3;
 
-        Database database = new Database(numberOfPages, pageSize, 5, 200);
+        Database database = new Database(tableSize, numberOfPages, pageSize, bucketSize);
 
     }
 }
