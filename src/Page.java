@@ -1,6 +1,7 @@
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Page {
+public class Page implements Serializable {
     private final ArrayList<Tuple> tuples = new ArrayList<>();
 
     public Page(Integer pageSize){

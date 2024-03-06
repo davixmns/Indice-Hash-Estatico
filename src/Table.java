@@ -1,6 +1,7 @@
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Table {
+public class Table implements Serializable {
     private final ArrayList<Page> pages = new ArrayList<>();
     private final Integer tableSize;
 
@@ -29,5 +30,9 @@ public class Table {
                 System.out.println(tuple.toString());
             }
         }
+    }
+
+    public Integer getTableSize(){
+        return tableSize;
     }
 }
