@@ -1,5 +1,6 @@
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Objects;
 
 public class Database implements Serializable {
@@ -16,15 +17,11 @@ public class Database implements Serializable {
     public void populateDatabase(BufferedReader reader) {
         try {
             System.out.println("Populating database...");
-
             for (String word; (word = reader.readLine()) != null; ) {
                 Integer pageIndex = this.table.insert(word);
                 Integer bucketIndex = hashFunction(word);
                 bucketOverflow.insert(bucketIndex, new Tuple(word, pageIndex));
             }
-
-            System.out.println(bucketOverflow.insertedValues);
-
             System.out.println("Database populated successfully!");
         } catch (Exception e) {
             System.out.println("Error reading file -> " + e.getMessage());
@@ -39,23 +36,49 @@ public class Database implements Serializable {
         return hash;
     }
 
-    public void searchWord(String word){
-        Integer bucketIndex = hashFunction(word);
-        Bucket bucket = bucketOverflow.getBucket(bucketIndex);
-        searchWordRecursively(word, bucket);
+    public void searchRandomWords() throws IOException {
+        BufferedReader reader = new BufferedReader(new FileReader("./files/words.txt"));
+        ArrayList<String> words = new ArrayList<>();
+        ArrayList<String> randomWords = new ArrayList<>();
+
+        for (String word; (word = reader.readLine()) != null; ) {
+            words.add(word);
+        }
+
+        for (int i = 0; i < 1000; i++) {
+            int randomIndex = (int) (Math.random() * words.size());
+            randomWords.add(words.get(randomIndex));
+        }
+
+        for (String word : randomWords) {
+            searchWord(word);
+        }
     }
 
-    public void searchWordRecursively(String word, Bucket rootBucket){
-        for (Tuple tuple : rootBucket.getTuples()){
-            if(tuple.getValue().equals(word)){
-                System.out.println("A palavra " + word + " foi encontrada no bucket "
-                        + bucketOverflow.getBucketIndex(rootBucket) + " na página " + tuple.getKey());
-                return;
+    public String searchWord(String word) {
+        Integer bucketIndex = hashFunction(word);
+        Bucket bucket = bucketOverflow.getBucket(bucketIndex);
+        return searchWordRecursively(word, bucket);
+    }
+
+    public String searchWordRecursively(String word, Bucket rootBucket) {
+        try {
+            for (Tuple tuple : rootBucket.getTuples()) {
+                String wordInTuple = tuple.getValue();
+                if (Objects.equals(wordInTuple, word)) {
+                    return ("A palavra " + word + " foi encontrada no bucket "
+                            + bucketOverflow.getBucketIndex(rootBucket) + " na página " + tuple.getKey());
+                }
             }
+            if (rootBucket.getNextBucket() != null) {
+                searchWordRecursively(word, rootBucket.getNextBucket());
+            }
+            return "A palavra " + word + " não foi encontrada";
+        } catch (Exception e) {
+            System.err.println("ERRO AO PROCURAR A PALAVRA " + word);
+            System.err.println(Arrays.toString(e.getStackTrace()));
         }
-        if(rootBucket.getNextBucket() != null){
-            searchWordRecursively(word, rootBucket.getNextBucket());
-        }
+        return null;
     }
 
 

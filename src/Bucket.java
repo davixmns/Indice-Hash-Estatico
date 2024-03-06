@@ -15,12 +15,8 @@ public class Bucket implements Serializable {
     }
 
     public boolean isFull() {
-        for (Tuple tuple : tuples) {
-            if (tuple.getKey() == null) {
-                return false;
-            }
-        }
-        return true;
+        Tuple lastTuple = tuples.get(tuples.size() - 1);
+        return lastTuple.getValue() != null;
     }
 
     public void insert(Tuple newTuple) {

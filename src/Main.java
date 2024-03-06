@@ -1,76 +1,100 @@
-import java.io.*;
-import java.util.Scanner;
+import javax.swing.*;
+import java.awt.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
 
 public class Main {
-//    public static void main(String[] args) throws Exception {
-//        BufferedReader reader = new BufferedReader(new FileReader("./files/words.txt"));
-//
-//        Integer tableSize = 470000;
-//        Integer pageSize = 20000;
-//        Integer bucketSize = 8000;
-//
-//        long startTime = System.currentTimeMillis();
-//        Database database = new Database(tableSize, pageSize, bucketSize);
-//        database.populateDatabase(reader);
-//        long endTime = System.currentTimeMillis();
-//        System.out.println("Total execution time: " + ((endTime - startTime) / 1000) + " seconds");
-//
-//
-//        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("./files/database.ser"))) {
-//            oos.writeObject(database);
-//            System.out.println("Database saved successfully!");
-//        } catch (IOException e) {
-//            System.out.println("Error saving database -> " + e);
-//        }
-//    }
+    public static Integer showEntry() {
+        ImageIcon icon = new ImageIcon("./files/dataIcon.png");
+        Image image = icon.getImage().getScaledInstance(70, 70, Image.SCALE_DEFAULT);
+        icon = new ImageIcon(image);
 
-    public static void serializeDatabase() throws FileNotFoundException {
-        BufferedReader reader = new BufferedReader(new FileReader("./files/words.txt"));
-        Integer tableSize = 470000;
-        Integer pageSize = 20000;
-        Integer bucketSize = 8000;
-
-        long startTime = System.currentTimeMillis();
-        Database database = new Database(tableSize, pageSize, bucketSize);
-        database.populateDatabase(reader);
-        long endTime = System.currentTimeMillis();
-        System.out.println("Total execution time: " + ((endTime - startTime) / 1000) + " seconds");
-
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("./files/database.ser"))) {
-            oos.writeObject(database);
-            System.out.println("Database saved successfully!");
-        } catch (IOException e) {
-            System.out.println("Error saving database -> " + e);
-        }
+        return JOptionPane.showOptionDialog(
+                null,
+                "Podemos iniciar?",
+                "Indice Hash Estático",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.PLAIN_MESSAGE,
+                icon,
+                new String[]{"Não", "Sim"},
+                "Sim"
+        );
     }
 
-    public static Database deserializeDatabase() {
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("./files/database.ser"))) {
-            Database database = (Database) ois.readObject();
-            System.out.println("Database loaded successfully!");
-            return database;
-        } catch (IOException | ClassNotFoundException e) {
-            System.out.println("Error loading database -> " + e.getMessage());
+    public static Integer[] showForm() {
+        JTextField tableSizeField = new JTextField();
+        JTextField pageSizeField = new JTextField();
+        JTextField bucketSizeField = new JTextField();
+
+        Object[] message = {
+                "Tamanho da Tabela:", tableSizeField,
+                "Tamanho da Página:", pageSizeField,
+                "Tamanho do Bucket:", bucketSizeField
+        };
+
+        int option = JOptionPane.showOptionDialog(null, message, "Configurações do Banco de Dados",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, null, null);
+
+        if (option == JOptionPane.OK_OPTION) {
+            int tableSize = Integer.parseInt(tableSizeField.getText());
+            int pageSize = Integer.parseInt(pageSizeField.getText());
+            int bucketSize = Integer.parseInt(bucketSizeField.getText());
+
+            return new Integer[]{tableSize, pageSize, bucketSize};
+        } else {
+            System.exit(0);
             return null;
         }
     }
 
+    public static void showLoading() {
+        ImageIcon icon = new ImageIcon("./files/duck3.gif");
+        Image image = icon.getImage().getScaledInstance(100, 150, Image.SCALE_DEFAULT);
+        icon = new ImageIcon(image);
+        JOptionPane.showMessageDialog(null, "Processando...", "Indice Hash Estático", JOptionPane.INFORMATION_MESSAGE, icon);
+    }
+
     public static void main(String[] args) throws Exception {
-        Scanner scanner = new Scanner(System.in);
+        Integer start = showEntry();
+        if (start == 1) {
+            BufferedReader reader = new BufferedReader(new FileReader("./files/words.txt"));
+            Integer[] form = showForm();
+            Integer tableSize = form[0];
+            Integer pageSize = form[1];
+            Integer bucketSize = form[2];
 
-        System.out.println("1 - Serialize database");
-        System.out.println("2 - Use serialized database");
+            Thread loadingThread = new Thread(Main::showLoading);
+            loadingThread.start();
 
-        int option = scanner.nextInt();
-        if(option == 1) {
-            serializeDatabase();
-        } else if(option == 2) {
-            Database database = deserializeDatabase();
-            if(database != null) {
-                System.out.println("Enter a word to search: ");
-                String word = scanner.next();
-                System.out.println("Searching for " + word + "...");
-                database.searchWord(word);
+            Database database = new Database(tableSize, pageSize, bucketSize);
+            database.populateDatabase(reader);
+
+            loadingThread.interrupt();
+
+            boolean flag = true;
+
+            while (flag) {
+                String word = JOptionPane.showInputDialog("Digite uma palavra para buscar:");
+                if (word != null) {
+                    String result = database.searchWord(word);
+                    int selected = JOptionPane.showOptionDialog(
+                            null,
+                            result,
+                            "Resultado da Busca",
+                            JOptionPane.DEFAULT_OPTION,
+                            JOptionPane.INFORMATION_MESSAGE,
+                            null,
+                            new String[]{"Buscar outra palavra", "Sair"},
+                            "Buscar outra palavra"
+                    );
+
+                    if (selected == 1) {
+                        flag = false;
+                    }
+
+                } else {
+                    flag = false;
+                }
             }
         }
     }

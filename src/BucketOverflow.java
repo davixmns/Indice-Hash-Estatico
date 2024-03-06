@@ -5,7 +5,6 @@ public class BucketOverflow implements Serializable {
     public final ArrayList<Bucket> buckets;
     private final Integer bucketSize;
     private Integer overflowDepth = 0;
-    public Integer insertedValues = 0;
 
     public BucketOverflow(Integer numberOfBuckets, Integer bucketSize) {
         buckets = new ArrayList<>();
@@ -26,9 +25,7 @@ public class BucketOverflow implements Serializable {
         boolean buckerIsFull = bucket.isFull();
         if (!buckerIsFull) {
             bucket.insert(tuple);
-            insertedValues++;
         } else {
-//            System.out.println("BUCKET OVERFLOW no bucket " + bucketIndex + " com profundidade " + overflowDepth);
             overflowDepth++;
             Bucket newBucket = new Bucket(bucketSize);
             bucket.setNextBucket(newBucket);

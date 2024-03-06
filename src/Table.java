@@ -15,7 +15,7 @@ public class Table implements Serializable {
 
     public Integer insert(String text){
         for (Page page : pages){
-            if(!page.isFull()){
+            if (!page.isFull()){
                 page.insert(text);
                 return pages.indexOf(page);
             }
