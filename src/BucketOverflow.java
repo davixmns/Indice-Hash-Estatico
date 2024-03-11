@@ -4,7 +4,6 @@ import java.util.ArrayList;
 public class BucketOverflow implements Serializable {
     public final ArrayList<Bucket> buckets;
     private final Integer bucketSize;
-    private Integer overflowDepth = 0;
 
     public BucketOverflow(Integer numberOfBuckets, Integer bucketSize) {
         buckets = new ArrayList<>();
@@ -15,34 +14,33 @@ public class BucketOverflow implements Serializable {
         }
     }
 
-    public void insert(Integer bucketIndex, Tuple tuple) {
+    public void insert(Integer bucketIndex, Tuple newTuple) {
         Bucket bucket = buckets.get(bucketIndex);
-        Integer depth = 1;
-        insertRecursively(bucketIndex, tuple, bucket, depth);
+        Integer depth = 0;
+        insertRecursively(bucketIndex, newTuple, bucket, depth);
     }
 
-    private void insertRecursively(Integer bucketIndex, Tuple tuple, Bucket bucket, Integer depth) {
-        boolean buckerIsFull = bucket.isFull();
-        if (!buckerIsFull) {
-            bucket.insert(tuple);
+    private void insertRecursively(Integer bucketIndex, Tuple tuple, Bucket bucketNode, Integer depth) {
+        if (!bucketNode.isFull()) {
+            bucketNode.insert(tuple);
         } else {
-            overflowDepth++;
-            Bucket newBucket = new Bucket(bucketSize);
-            bucket.setNextBucket(newBucket);
             depth++;
-            insertRecursively(bucketIndex, tuple, newBucket, depth);
+            if (bucketNode.getNextBucket() == null) {
+                bucketNode.setNextBucket(new Bucket(bucketSize));
+            }
+            insertRecursively(bucketIndex, tuple, bucketNode.getNextBucket(), depth);
         }
     }
 
-    public Integer getBucketsSize(){
+    public Integer getBucketsSize() {
         return buckets.size();
     }
 
-    public Bucket getBucket(Integer index){
+    public Bucket getBucket(Integer index) {
         return buckets.get(index);
     }
 
-    public Integer getBucketIndex(Bucket bucket){
+    public Integer getBucketIndex(Bucket bucket) {
         return buckets.indexOf(bucket);
     }
 }

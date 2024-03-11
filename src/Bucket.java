@@ -22,7 +22,9 @@ public class Bucket implements Serializable {
     public void insert(Tuple newTuple) {
         for (Tuple tuple : tuples) {
             if (tuple.getValue() == null) {
-                tuple.setValues(newTuple.getValue(), newTuple.getKey());
+                String word = newTuple.getValue();
+                Integer pageIndex = newTuple.getKey();
+                tuple.setValues(word, pageIndex);
                 return;
             }
         }

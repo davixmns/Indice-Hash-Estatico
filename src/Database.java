@@ -7,11 +7,18 @@ public class Database implements Serializable {
     private final Table table;
     private final BucketOverflow bucketOverflow;
 
-    public Database(Integer tableSize, Integer pageSize, Integer bucketSize) {
-        this.table = new Table(tableSize, pageSize);
-        int numberOfBuckets = (tableSize / bucketSize) + 1;
+//    Se o numero de buckets é (tableSize / bucketSize) + 1, então como aconteceria os buckets overflow?
+//    public Database(Integer tableSize, Integer pageSize, Integer bucketSize) {
+//        this.table = new Table(tableSize, pageSize);
+//        int numberOfBuckets = (tableSize / bucketSize) + 1;
+//        this.bucketOverflow = new BucketOverflow(numberOfBuckets, bucketSize);
+//        System.out.println("Database created successfully!");
+//    }
 
+    public Database(Integer tableSize, Integer pageSize, Integer bucketSize, Integer numberOfBuckets) {
+        this.table = new Table(tableSize, pageSize);
         this.bucketOverflow = new BucketOverflow(numberOfBuckets, bucketSize);
+        System.out.println("Database created successfully!");
     }
 
     public void populateDatabase(BufferedReader reader) {
@@ -22,6 +29,7 @@ public class Database implements Serializable {
                 Integer bucketIndex = hashFunction(word);
                 bucketOverflow.insert(bucketIndex, new Tuple(word, pageIndex));
             }
+            System.out.println(hashFunction("alan"));
             System.out.println("Database populated successfully!");
         } catch (Exception e) {
             System.out.println("Error reading file -> " + e.getMessage());
@@ -30,71 +38,44 @@ public class Database implements Serializable {
 
     private int hashFunction(String word) {
         int hash = 0;
+        int bucketsSize = this.bucketOverflow.getBucketsSize();
         for (int i = 0; i < word.length(); i++) {
-            hash = (hash * 31 + word.charAt(i)) % this.bucketOverflow.getBucketsSize();
+            hash = (hash * 31 + word.charAt(i)) % bucketsSize;
         }
         return hash;
-    }
-
-    public void searchRandomWords() throws IOException {
-        BufferedReader reader = new BufferedReader(new FileReader("./files/words.txt"));
-        ArrayList<String> words = new ArrayList<>();
-        ArrayList<String> randomWords = new ArrayList<>();
-
-        for (String word; (word = reader.readLine()) != null; ) {
-            words.add(word);
-        }
-
-        for (int i = 0; i < 1000; i++) {
-            int randomIndex = (int) (Math.random() * words.size());
-            randomWords.add(words.get(randomIndex));
-        }
-
-        for (String word : randomWords) {
-            searchWord(word);
-        }
     }
 
     public String searchWord(String word) {
         Integer bucketIndex = hashFunction(word);
         Bucket bucket = bucketOverflow.getBucket(bucketIndex);
-        return searchWordRecursively(word, bucket);
+        Integer depth = 0;
+        return searchWordRecursively(word, bucket, depth, bucketIndex);
     }
 
-    public String searchWordRecursively(String word, Bucket rootBucket) {
+    public String searchWordRecursively(String word, Bucket bucketNode, Integer depth, Integer rootBucketIndex) {
         try {
-            for (Tuple tuple : rootBucket.getTuples()) {
+            for (Tuple tuple : bucketNode.getTuples()) {
                 String wordInTuple = tuple.getValue();
+
                 if (Objects.equals(wordInTuple, word)) {
                     return ("A palavra " + word + " foi encontrada no bucket "
-                            + bucketOverflow.getBucketIndex(rootBucket) + " na página " + tuple.getKey());
+                            + rootBucketIndex + " com profundidade " + depth + " na página " + tuple.getKey());
+                }
+
+                if(tuple.getValue() == null){
+                    return "A palavra " + word + " não foi encontrada";
                 }
             }
-            if (rootBucket.getNextBucket() != null) {
-                searchWordRecursively(word, rootBucket.getNextBucket());
+            if (bucketNode.getNextBucket() != null) {
+                depth++;
+                Bucket nextBucket = bucketNode.getNextBucket();
+                return searchWordRecursively(word, nextBucket, depth, rootBucketIndex);
             }
-            return "A palavra " + word + " não foi encontrada";
         } catch (Exception e) {
             System.err.println("ERRO AO PROCURAR A PALAVRA " + word);
             System.err.println(Arrays.toString(e.getStackTrace()));
         }
         return null;
-    }
-
-
-    public void printBucketsRecursively(Bucket nextBucket, Integer father) {
-        System.out.println("Este bucket é filho de " + father);
-        for (Tuple tuple : nextBucket.getTuples()) {
-            System.out.println(tuple.toString());
-        }
-        System.out.println();
-        if (nextBucket.getNextBucket() != null) {
-            printBucketsRecursively(nextBucket.getNextBucket(), father);
-        }
-    }
-
-    public void printTable() {
-        this.table.printTable();
     }
 
     public void printBuckets() {
@@ -109,5 +90,21 @@ public class Database implements Serializable {
                 printBucketsRecursively(bucket.getNextBucket(), bucketOverflow.buckets.indexOf(bucket));
             }
         }
+    }
+
+    public void printBucketsRecursively(Bucket bucketNode, Integer father) {
+        System.out.println("Este bucket é filho de " + father);
+        for (Tuple tuple : bucketNode.getTuples()) {
+            System.out.println(tuple.toString());
+        }
+        System.out.println();
+        Bucket nextBucket = bucketNode.getNextBucket();
+        if (nextBucket != null) {
+            printBucketsRecursively(nextBucket, father);
+        }
+    }
+
+    public void printTable() {
+        this.table.printTable();
     }
 }

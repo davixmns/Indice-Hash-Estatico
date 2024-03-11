@@ -55,28 +55,42 @@ public class Main {
     }
 
     public static void main(String[] args) throws Exception {
+        BufferedReader reader = new BufferedReader(new FileReader("./files/words.txt"));
         Integer start = showEntry();
+        Integer[] form;
+        Integer tableSize = null;
+        Integer pageSize = null;
+        Integer bucketSize = null;
+        Integer numberOfBuckets = 50;
+
         if (start == 1) {
-            BufferedReader reader = new BufferedReader(new FileReader("./files/words.txt"));
-            Integer[] form = showForm();
-            Integer tableSize = form[0];
-            Integer pageSize = form[1];
-            Integer bucketSize = form[2];
+            boolean formFlag = true;
+            while (formFlag) {
+                try {
+                    form = showForm();
+                    tableSize = form[0];
+                    pageSize = form[1];
+                    bucketSize = form[2];
+                    formFlag = false;
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(null, "Por favor, preencha todos os campos corretamente.", "Erro", JOptionPane.ERROR_MESSAGE);
+                }
+            }
 
             Thread loadingThread = new Thread(Main::showLoading);
             loadingThread.start();
 
-            Database database = new Database(tableSize, pageSize, bucketSize);
+            Database database = new Database(tableSize, pageSize, bucketSize, numberOfBuckets);
             database.populateDatabase(reader);
 
             loadingThread.interrupt();
 
-            boolean flag = true;
-
-            while (flag) {
+            boolean searchFlag = true;
+            while (searchFlag) {
                 String word = JOptionPane.showInputDialog("Digite uma palavra para buscar:");
                 if (word != null) {
                     String result = database.searchWord(word);
+                    System.out.println(result);
                     int selected = JOptionPane.showOptionDialog(
                             null,
                             result,
@@ -89,11 +103,11 @@ public class Main {
                     );
 
                     if (selected == 1) {
-                        flag = false;
+                        searchFlag = false;
                     }
 
                 } else {
-                    flag = false;
+                    searchFlag = false;
                 }
             }
         }

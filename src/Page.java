@@ -16,10 +16,10 @@ public class Page implements Serializable {
     }
 
     public void insert(String text){
-        for (int i = 0; i < tuples.size(); i++){
-            if(tuples.get(i).getValue() == null){
-                tuples.get(i).setValues(text, i);
-                return;
+        for (Tuple tuple : tuples) {
+            if (tuple.getValue() == null) {
+                tuple.setValues(text, tuples.indexOf(tuple));
+                break;
             }
         }
     }
