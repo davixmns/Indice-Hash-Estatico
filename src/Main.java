@@ -80,11 +80,13 @@ public class Main {
             Thread loadingThread = new Thread(Main::showLoading);
             loadingThread.start();
 
-            Database database = new Database(tableSize, pageSize, bucketSize, numberOfBuckets);
+            Database database = new Database(tableSize, pageSize, bucketSize);
             database.populateDatabase(reader);
 
             loadingThread.interrupt();
 
+
+            JOptionPane.showMessageDialog(null, "Taxa de Overflow = " + database.getOverflowPercentage());
             boolean searchFlag = true;
             while (searchFlag) {
                 String word = JOptionPane.showInputDialog("Digite uma palavra para buscar:");

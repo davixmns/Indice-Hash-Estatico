@@ -7,19 +7,18 @@ public class Database implements Serializable {
     private final Table table;
     private final BucketOverflow bucketOverflow;
 
-//    Se o numero de buckets é (tableSize / bucketSize) + 1, então como aconteceria os buckets overflow?
-//    public Database(Integer tableSize, Integer pageSize, Integer bucketSize) {
-//        this.table = new Table(tableSize, pageSize);
-//        int numberOfBuckets = (tableSize / bucketSize) + 1;
-//        this.bucketOverflow = new BucketOverflow(numberOfBuckets, bucketSize);
-//        System.out.println("Database created successfully!");
-//    }
-
-    public Database(Integer tableSize, Integer pageSize, Integer bucketSize, Integer numberOfBuckets) {
+    public Database(Integer tableSize, Integer pageSize, Integer bucketSize) {
         this.table = new Table(tableSize, pageSize);
+        int numberOfBuckets = (tableSize / bucketSize) + 1;
         this.bucketOverflow = new BucketOverflow(numberOfBuckets, bucketSize);
         System.out.println("Database created successfully!");
     }
+
+//    public Database(Integer tableSize, Integer pageSize, Integer bucketSize, Integer numberOfBuckets) {
+//        this.table = new Table(tableSize, pageSize);
+//        this.bucketOverflow = new BucketOverflow(numberOfBuckets, bucketSize);
+//        System.out.println("Database created successfully!");
+//    }
 
     public void populateDatabase(BufferedReader reader) {
         try {
@@ -29,7 +28,6 @@ public class Database implements Serializable {
                 Integer bucketIndex = hashFunction(word);
                 bucketOverflow.insert(bucketIndex, new Tuple(word, pageIndex));
             }
-            System.out.println(hashFunction("alan"));
             System.out.println("Database populated successfully!");
         } catch (Exception e) {
             System.out.println("Error reading file -> " + e.getMessage());
@@ -104,7 +102,7 @@ public class Database implements Serializable {
         }
     }
 
-    public void printTable() {
-        this.table.printTable();
+    public Integer getOverflowPercentage() {
+        return bucketOverflow.getOverflowPercentage();
     }
 }

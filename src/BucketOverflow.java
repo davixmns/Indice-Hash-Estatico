@@ -4,6 +4,7 @@ import java.util.ArrayList;
 public class BucketOverflow implements Serializable {
     public final ArrayList<Bucket> buckets;
     private final Integer bucketSize;
+    private Integer overflowCount = 0;
 
     public BucketOverflow(Integer numberOfBuckets, Integer bucketSize) {
         buckets = new ArrayList<>();
@@ -25,11 +26,20 @@ public class BucketOverflow implements Serializable {
             bucketNode.insert(tuple);
         } else {
             depth++;
+            this.overflowCount++;
             if (bucketNode.getNextBucket() == null) {
                 bucketNode.setNextBucket(new Bucket(bucketSize));
             }
             insertRecursively(bucketIndex, tuple, bucketNode.getNextBucket(), depth);
         }
+    }
+
+    public Integer getOverflowPercentage() {
+        return (overflowCount * 100) / (buckets.size() * bucketSize);
+    }
+
+    public Integer getCollisionPercentage() {
+        return 0;
     }
 
     public Integer getBucketsSize() {
