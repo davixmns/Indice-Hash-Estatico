@@ -4,7 +4,7 @@ import java.util.ArrayList;
 public class BucketOverflow implements Serializable {
     public final ArrayList<Bucket> buckets;
     private final Integer bucketSize;
-    private Integer overflowCount = 0;
+    private Integer collisionCount = 0;
 
     public BucketOverflow(Integer numberOfBuckets, Integer bucketSize) {
         buckets = new ArrayList<>();
@@ -26,16 +26,24 @@ public class BucketOverflow implements Serializable {
             bucketNode.insert(tuple);
         } else {
             depth++;
-            this.overflowCount++;
             if (bucketNode.getNextBucket() == null) {
+//                System.out.println("OVERFLOW on bucket " + bucketIndex + " at word " + tuple.getValue());
                 bucketNode.setNextBucket(new Bucket(bucketSize));
+            } else {
+                this.collisionCount++;
             }
             insertRecursively(bucketIndex, tuple, bucketNode.getNextBucket(), depth);
         }
     }
 
-    public Integer getOverflowPercentage() {
-        return (overflowCount * 100) / (buckets.size() * bucketSize);
+    public Float getOverflowPercentage() {
+        int overflowCount = 0;
+        for (Bucket bucket : buckets) {
+            if (bucket.getNextBucket() != null) {
+                overflowCount++;
+            }
+        }
+        return (float) overflowCount / (float) buckets.size() * 100;
     }
 
     public Integer getCollisionPercentage() {

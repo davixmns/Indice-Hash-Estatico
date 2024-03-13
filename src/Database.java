@@ -4,26 +4,37 @@ import java.util.Arrays;
 import java.util.Objects;
 
 public class Database implements Serializable {
-    private final Table table;
-    private final BucketOverflow bucketOverflow;
+    private Table table;
+    private BucketOverflow bucketOverflow;
 
-    public Database(Integer tableSize, Integer pageSize, Integer bucketSize) {
-        this.table = new Table(tableSize, pageSize);
-        int numberOfBuckets = (tableSize / bucketSize) + 1;
-        this.bucketOverflow = new BucketOverflow(numberOfBuckets, bucketSize);
-        System.out.println("Database created successfully!");
+    public Database(BufferedReader reader, Integer pageSize) {
+        try {
+            ArrayList<String> words = new ArrayList<>();
+            for (String word; (word = reader.readLine()) != null; ) {
+                words.add(word);
+            }
+
+            Integer tableSize = words.size();
+            Integer bucketSize = pageSize / 5;
+            Integer numberOfBuckets = (tableSize / bucketSize) + 1;
+
+            this.table = new Table(tableSize, pageSize);
+            this.bucketOverflow = new BucketOverflow(numberOfBuckets, bucketSize);
+
+            System.out.println("Database created successfully!");
+
+            populateDatabase(words);
+
+        } catch (Exception e) {
+            System.out.println("Error creating database -> " + e.getMessage());
+        }
+
     }
 
-//    public Database(Integer tableSize, Integer pageSize, Integer bucketSize, Integer numberOfBuckets) {
-//        this.table = new Table(tableSize, pageSize);
-//        this.bucketOverflow = new BucketOverflow(numberOfBuckets, bucketSize);
-//        System.out.println("Database created successfully!");
-//    }
-
-    public void populateDatabase(BufferedReader reader) {
+    public void populateDatabase(ArrayList<String> words) {
         try {
             System.out.println("Populating database...");
-            for (String word; (word = reader.readLine()) != null; ) {
+            for (String word : words) {
                 Integer pageIndex = this.table.insert(word);
                 Integer bucketIndex = hashFunction(word);
                 bucketOverflow.insert(bucketIndex, new Tuple(word, pageIndex));
@@ -60,7 +71,7 @@ public class Database implements Serializable {
                             + rootBucketIndex + " com profundidade " + depth + " na página " + tuple.getKey());
                 }
 
-                if(tuple.getValue() == null){
+                if (tuple.getValue() == null) {
                     return "A palavra " + word + " não foi encontrada";
                 }
             }
@@ -102,7 +113,7 @@ public class Database implements Serializable {
         }
     }
 
-    public Integer getOverflowPercentage() {
+    public Float getOverflowPercentage() {
         return bucketOverflow.getOverflowPercentage();
     }
 }

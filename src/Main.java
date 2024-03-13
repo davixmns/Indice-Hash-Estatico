@@ -21,32 +21,6 @@ public class Main {
         );
     }
 
-    public static Integer[] showForm() {
-        JTextField tableSizeField = new JTextField();
-        JTextField pageSizeField = new JTextField();
-        JTextField bucketSizeField = new JTextField();
-
-        Object[] message = {
-                "Tamanho da Tabela:", tableSizeField,
-                "Tamanho da Página:", pageSizeField,
-                "Tamanho do Bucket:", bucketSizeField
-        };
-
-        int option = JOptionPane.showOptionDialog(null, message, "Configurações do Banco de Dados",
-                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, null, null);
-
-        if (option == JOptionPane.OK_OPTION) {
-            int tableSize = Integer.parseInt(tableSizeField.getText());
-            int pageSize = Integer.parseInt(pageSizeField.getText());
-            int bucketSize = Integer.parseInt(bucketSizeField.getText());
-
-            return new Integer[]{tableSize, pageSize, bucketSize};
-        } else {
-            System.exit(0);
-            return null;
-        }
-    }
-
     public static void showLoading() {
         ImageIcon icon = new ImageIcon("./files/duck3.gif");
         Image image = icon.getImage().getScaledInstance(100, 150, Image.SCALE_DEFAULT);
@@ -55,22 +29,15 @@ public class Main {
     }
 
     public static void main(String[] args) throws Exception {
-        BufferedReader reader = new BufferedReader(new FileReader("./files/words.txt"));
         Integer start = showEntry();
-        Integer[] form;
-        Integer tableSize = null;
         Integer pageSize = null;
-        Integer bucketSize = null;
-        Integer numberOfBuckets = 50;
 
         if (start == 1) {
+            BufferedReader reader = new BufferedReader(new FileReader("./files/words.txt"));
             boolean formFlag = true;
             while (formFlag) {
                 try {
-                    form = showForm();
-                    tableSize = form[0];
-                    pageSize = form[1];
-                    bucketSize = form[2];
+                    pageSize = Integer.parseInt(JOptionPane.showInputDialog("Digite o tamanho da página :"));
                     formFlag = false;
                 } catch (Exception e) {
                     JOptionPane.showMessageDialog(null, "Por favor, preencha todos os campos corretamente.", "Erro", JOptionPane.ERROR_MESSAGE);
@@ -80,13 +47,12 @@ public class Main {
             Thread loadingThread = new Thread(Main::showLoading);
             loadingThread.start();
 
-            Database database = new Database(tableSize, pageSize, bucketSize);
-            database.populateDatabase(reader);
+            Database database = new Database(reader, pageSize);
 
             loadingThread.interrupt();
 
 
-            JOptionPane.showMessageDialog(null, "Taxa de Overflow = " + database.getOverflowPercentage());
+            JOptionPane.showMessageDialog(null, "Taxa de Overflow = " + String.format("%.2f", database.getOverflowPercentage()) + "%");
             boolean searchFlag = true;
             while (searchFlag) {
                 String word = JOptionPane.showInputDialog("Digite uma palavra para buscar:");
