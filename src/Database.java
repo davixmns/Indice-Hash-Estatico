@@ -3,6 +3,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
 
+import com.google.common.hash.HashFunction;
+import com.google.common.hash.Hashing;
+
 public class Database implements Serializable {
     private Table table;
     private BucketOverflow bucketOverflow;
@@ -31,7 +34,7 @@ public class Database implements Serializable {
 
     }
 
-    public void populateDatabase(ArrayList<String> words) {
+    private void populateDatabase(ArrayList<String> words) {
         try {
             System.out.println("Populating database...");
             for (String word : words) {
@@ -47,12 +50,20 @@ public class Database implements Serializable {
 
     private int hashFunction(String word) {
         int hash = 0;
-        int bucketsSize = this.bucketOverflow.getBucketsSize();
+        int numberOfBuckets = this.bucketOverflow.getBucketsSize();
         for (int i = 0; i < word.length(); i++) {
-            hash = (hash * 31 + word.charAt(i)) % bucketsSize;
+            hash = (hash * 31 + word.charAt(i)) % numberOfBuckets;
         }
         return hash;
     }
+
+//    public int hashFunction(String word) {
+//        HashFunction hf = Hashing.murmur3_32();
+//        int hash = hf.hashBytes(word.getBytes()).asInt();
+//        int numberOfBuckets = this.bucketOverflow.getBucketsSize();
+//        Integer result = Math.abs(hash % numberOfBuckets);
+//        return result;
+//    }
 
     public String searchWord(String word) {
         Integer bucketIndex = hashFunction(word);
@@ -61,18 +72,17 @@ public class Database implements Serializable {
         return searchWordRecursively(word, bucket, depth, bucketIndex);
     }
 
-    public String searchWordRecursively(String word, Bucket bucketNode, Integer depth, Integer rootBucketIndex) {
+    private String searchWordRecursively(String word, Bucket bucketNode, Integer depth, Integer rootBucketIndex) {
         try {
             for (Tuple tuple : bucketNode.getTuples()) {
                 String wordInTuple = tuple.getValue();
 
                 if (Objects.equals(wordInTuple, word)) {
-                    return ("A palavra " + word + " foi encontrada no bucket "
-                            + rootBucketIndex + " com profundidade " + depth + " na página " + tuple.getKey());
+                    return ("The word " + word + " was found in the bucket " + rootBucketIndex + " at depth " + depth + " and page " + tuple.getKey());
                 }
 
                 if (tuple.getValue() == null) {
-                    return "A palavra " + word + " não foi encontrada";
+                    return ("The word " + word + " was not found in the database");
                 }
             }
             if (bucketNode.getNextBucket() != null) {
@@ -87,33 +97,15 @@ public class Database implements Serializable {
         return null;
     }
 
-    public void printBuckets() {
-        for (Bucket bucket : bucketOverflow.buckets) {
-            System.out.println("Bucket: " + bucketOverflow.buckets.indexOf(bucket));
-            for (Tuple tuple : bucket.getTuples()) {
-                System.out.println(tuple.toString());
-            }
-
-            System.out.println();
-            if (bucket.getNextBucket() != null) {
-                printBucketsRecursively(bucket.getNextBucket(), bucketOverflow.buckets.indexOf(bucket));
-            }
-        }
-    }
-
-    public void printBucketsRecursively(Bucket bucketNode, Integer father) {
-        System.out.println("Este bucket é filho de " + father);
-        for (Tuple tuple : bucketNode.getTuples()) {
-            System.out.println(tuple.toString());
-        }
-        System.out.println();
-        Bucket nextBucket = bucketNode.getNextBucket();
-        if (nextBucket != null) {
-            printBucketsRecursively(nextBucket, father);
-        }
-    }
-
     public Float getOverflowPercentage() {
-        return bucketOverflow.getOverflowPercentage();
+        return this.bucketOverflow.getOverflowPercentage();
+    }
+
+    public Float getCollisionPercentage() {
+        return this.bucketOverflow.getCollisionPercentage();
+    }
+
+    public ArrayList<Tuple> getTuples(Integer limit) {
+        return this.table.getTuples(limit);
     }
 }

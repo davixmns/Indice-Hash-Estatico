@@ -5,6 +5,7 @@ public class BucketOverflow implements Serializable {
     public final ArrayList<Bucket> buckets;
     private final Integer bucketSize;
     private Integer collisionCount = 0;
+    private Integer insetionsCount = 0;
 
     public BucketOverflow(Integer numberOfBuckets, Integer bucketSize) {
         buckets = new ArrayList<>();
@@ -24,14 +25,15 @@ public class BucketOverflow implements Serializable {
     private void insertRecursively(Integer bucketIndex, Tuple tuple, Bucket bucketNode, Integer depth) {
         if (!bucketNode.isFull()) {
             bucketNode.insert(tuple);
+            this.insetionsCount++;
         } else {
             depth++;
+            this.collisionCount++;
             if (bucketNode.getNextBucket() == null) {
 //                System.out.println("OVERFLOW on bucket " + bucketIndex + " at word " + tuple.getValue());
                 bucketNode.setNextBucket(new Bucket(bucketSize));
-            } else {
-                this.collisionCount++;
             }
+//            System.out.println(tuple.getValue() + " -> " + depth);
             insertRecursively(bucketIndex, tuple, bucketNode.getNextBucket(), depth);
         }
     }
@@ -46,8 +48,8 @@ public class BucketOverflow implements Serializable {
         return (float) overflowCount / (float) buckets.size() * 100;
     }
 
-    public Integer getCollisionPercentage() {
-        return 0;
+    public Float getCollisionPercentage() {
+        return (float) collisionCount / (float) insetionsCount * 100;
     }
 
     public Integer getBucketsSize() {

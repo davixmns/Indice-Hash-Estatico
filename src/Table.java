@@ -6,7 +6,8 @@ public class Table implements Serializable {
     private final Integer tableSize;
 
     public Table(Integer tableSize, Integer pageSize) {
-        int numberOfPages = tableSize / pageSize;
+        int extraPages = 1;
+        int numberOfPages = (tableSize / pageSize) + extraPages;
         this.tableSize = tableSize;
         for (int i = 0; i < numberOfPages; i++) {
             pages.add(new Page(pageSize));
@@ -21,6 +22,7 @@ public class Table implements Serializable {
                 return i;
             }
         }
+        System.out.println("Table is full!");
         return null;
     }
 
@@ -31,6 +33,21 @@ public class Table implements Serializable {
                 System.out.println(tuple.toString());
             }
         }
+    }
+
+    public ArrayList<Tuple> getTuples(Integer limit){
+        ArrayList<Tuple> tuples = new ArrayList<>();
+        for (Page page : pages) {
+            for (Tuple tuple : page.getTuples()) {
+                if(tuple.getValue() != null){
+                    tuples.add(tuple);
+                }
+                if(tuples.size() == limit){
+                    return tuples;
+                }
+            }
+        }
+        return tuples;
     }
 
     public Integer getTableSize() {
