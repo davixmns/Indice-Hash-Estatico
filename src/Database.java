@@ -3,9 +3,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
 
-import com.google.common.hash.HashFunction;
-import com.google.common.hash.Hashing;
-
 public class Database implements Serializable {
     private Table table;
     private BucketOverflow bucketOverflow;
@@ -56,14 +53,6 @@ public class Database implements Serializable {
         }
         return hash;
     }
-
-//    public int hashFunction(String word) {
-//        HashFunction hf = Hashing.murmur3_32();
-//        int hash = hf.hashBytes(word.getBytes()).asInt();
-//        int numberOfBuckets = this.bucketOverflow.getBucketsSize();
-//        Integer result = Math.abs(hash % numberOfBuckets);
-//        return result;
-//    }
 
     public String searchWord(String word) {
         Integer bucketIndex = hashFunction(word);
