@@ -1,4 +1,4 @@
-<h1>Indice Hash Estatico</h1>
+<h1>Indice Hash Estático</h1>
 
 Um índice hash estático é uma estrutura de dados que mapeia chaves para valores usando uma função hash pré-definida e um conjunto fixo de buckets. É uma técnica eficiente para armazenar e recuperar dados rapidamente, especialmente em cenários com um grande volume de consultas.
 
